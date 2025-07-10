@@ -8,10 +8,11 @@ local runService = game:GetService("RunService")
 
 local SHORE_BUFFER = 100 -- x studs far from the shore, the shore SFX will not be heard
 local marker = script.ZMarker
+local ambience = script.Ambience
 
-script.Seabirds:Play()
-script.Landbirds:Play()
-script.Shore:Play()
+for _, sound: Sound in pairs(ambience:GetChildren()) do
+	sound:Play()
+end
 
 local camera = workspace.CurrentCamera
 
@@ -20,9 +21,12 @@ local function renderStep()
 	local zDifference = math.clamp(math.abs(marker.Position.Z - myPos.Z), 0, SHORE_BUFFER)
 	local ratio = zDifference / SHORE_BUFFER
 	
-	script.Landbirds.Volume = ratio * script.Landbirds:GetAttribute("Volume")
-	script.Shore.Volume = (1 - ratio) * script.Shore:GetAttribute("Volume")
-	script.Seabirds.Volume = (1 - ratio) * script.Seabirds:GetAttribute("Volume")
+	for _, sound: Sound in pairs(ambience:GetChildren()) do
+		local isInverse = sound:GetAttribute("Inverse")
+		local volume = sound:GetAttribute("Volume") or 1
+		
+		sound.Volume = (isInverse and (1 - ratio) or ratio) * volume
+	end
 end
 
 runService.RenderStepped:Connect(renderStep)
